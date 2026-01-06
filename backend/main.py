@@ -22,20 +22,31 @@ app.add_middleware(
 
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from pathlib import Path
 
 # ... (existing code)
 
 from api.endpoints import router as api_router
 app.include_router(api_router, prefix="/api")
 
-# Serve React static files (Production Config)
-# Path relative to backend/main.py -> ../frontend/dist
-frontend_dist = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+# Serve React static files (Production Config - Robust)
+# This handles the difference between local (backend/ as cwd) and Render (root as cwd)
+BASE_DIR = Path(__file__).resolve().parent
+# Navigate up to root, then into frontend/dist
+# Structure:
+# /root
+#   /backend/main.py (Base Dir)
+#   /frontend/dist/
+FRONTEND_DIST = BASE_DIR.parent / "frontend" / "dist"
+ASSETS_DIR = FRONTEND_DIST / "assets"
 
-if os.path.exists(frontend_dist):
+print(f"🔹 [Static Config] Serving frontend from: {FRONTEND_DIST}")
+
+if FRONTEND_DIST.exists():
     # Mount assets folder (JS/CSS)
-    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
-
+    if ASSETS_DIR.exists():
+        app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+    
     # Catch-all for React Router (Single Page App)
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
@@ -44,13 +55,14 @@ if os.path.exists(frontend_dist):
             return {"error": "API Endpoint Not Found"}
             
         # 2. Serve specific file if it exists (e.g., favicon.ico, logo.png)
-        file_path = os.path.join(frontend_dist, full_path)
-        if os.path.isfile(file_path):
-            return FileResponse(file_path)
+        target_file = FRONTEND_DIST / full_path
+        if target_file.is_file():
+            return FileResponse(target_file)
             
         # 3. Fallback to index.html for all other routes (SPA handling)
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+        return FileResponse(FRONTEND_DIST / "index.html")
 else:
+    print(f"❌ [Static Config] Frontend dist not found at {FRONTEND_DIST}")
     @app.get("/")
     def read_root():
         return {"status": "backend-running", "message": "Frontend build not found. Run 'npm run build' in frontend/"}
