@@ -10,3 +10,7 @@ cd frontend
 npm install
 npm run build
 cd ..
+
+# Copy frontend build to backend static folder for self-contained serving
+mkdir -p backend/static
+cp -r frontend/dist/* backend/static/

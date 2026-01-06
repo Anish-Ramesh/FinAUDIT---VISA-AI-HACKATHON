@@ -100,7 +100,7 @@ This project is configured for seamless deployment on **Render.com**.
    - `PYTHON_VERSION`: `3.11.0`
    - `NODE_VERSION`: `18.17.0`
    - `GOOGLE_API_KEY`: `...`
-4. **Deploy**: Render will auto-build the React frontend and serve it via FastAPI.
+4. **Deploy**: Render will auto-build the React frontend and serve it via FastAPI from `backend/static`.
 
 ---
 

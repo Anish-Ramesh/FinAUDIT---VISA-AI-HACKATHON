@@ -29,20 +29,14 @@ from pathlib import Path
 from api.endpoints import router as api_router
 app.include_router(api_router, prefix="/api")
 
-# Serve React static files (Production Config - Robust)
-# This handles the difference between local (backend/ as cwd) and Render (root as cwd)
+# Serve React static files (Production Config - Self-Contained)
 BASE_DIR = Path(__file__).resolve().parent
-# Navigate up to root, then into frontend/dist
-# Structure:
-# /root
-#   /backend/main.py (Base Dir)
-#   /frontend/dist/
-FRONTEND_DIST = BASE_DIR.parent / "frontend" / "dist"
-ASSETS_DIR = FRONTEND_DIST / "assets"
+STATIC_DIR = BASE_DIR / "static"
+ASSETS_DIR = STATIC_DIR / "assets"
 
-print(f"🔹 [Static Config] Serving frontend from: {FRONTEND_DIST}")
+print(f"🔹 [Static Config] Serving frontend from: {STATIC_DIR}")
 
-if FRONTEND_DIST.exists():
+if STATIC_DIR.exists():
     # Mount assets folder (JS/CSS)
     if ASSETS_DIR.exists():
         app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
@@ -55,14 +49,14 @@ if FRONTEND_DIST.exists():
             return {"error": "API Endpoint Not Found"}
             
         # 2. Serve specific file if it exists (e.g., favicon.ico, logo.png)
-        target_file = FRONTEND_DIST / full_path
+        target_file = STATIC_DIR / full_path
         if target_file.is_file():
             return FileResponse(target_file)
             
         # 3. Fallback to index.html for all other routes (SPA handling)
-        return FileResponse(FRONTEND_DIST / "index.html")
+        return FileResponse(STATIC_DIR / "index.html")
 else:
-    print(f"❌ [Static Config] Frontend dist not found at {FRONTEND_DIST}")
+    print(f"❌ [Static Config] Static folder not found at {STATIC_DIR}")
     @app.get("/")
     def read_root():
-        return {"status": "backend-running", "message": "Frontend build not found. Run 'npm run build' in frontend/"}
+        return {"status": "backend-running", "message": "Frontend build not found in backend/static/"}
