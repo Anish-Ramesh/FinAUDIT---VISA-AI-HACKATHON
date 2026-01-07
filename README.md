@@ -12,7 +12,7 @@
 
 ## 👥 Collaborators
 
-| Name | Role | GitHub |
+| Name | Role | GitHub |    
 |------|------|--------|
 | **Anish Ramesh** | Developer | [@Anish-Ramesh](https://github.com/Anish-Ramesh) |
 | **Ganesh Arihanth** | Developer | [@GaneshArihanth](https://github.com/GaneshArihanth) |
