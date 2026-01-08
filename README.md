@@ -1,115 +1,217 @@
-# 🛡️ FinAUDIT - AI-Powered Compliance & Health System
+# FinAUDIT: Next-Generation Financial Compliance & Health System 🚀
 
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
-![Python](https://img.shields.io/badge/Python-3.11-blue)
-![React](https://img.shields.io/badge/React-18-cyan)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.95-green)
-![Gemini](https://img.shields.io/badge/AI-Gemini%20Flash-orange)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/Backend-FastAPI-green)
+![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue)
+![AI](https://img.shields.io/badge/AI-Gemini%201.5%20Flash%20%2B%20LangGraph-orange)
+![Docker](https://img.shields.io/badge/Deployment-Docker%20Ready-blueviolet)
 
-**FinAUDIT** is an advanced regulatory compliance and data health system designed for financial datasets. It combines deterministic rule engines with Generative AI (Google Gemini) to provide audit-grade analysis, risk assessment, and actionable remediation steps.
-
----
-
-## 🚀 Key Features
-
-### 1. 🌍 Multi-Regulation Compliance Engine
-Switch instantly between global standards to re-evaluate your dataset:
-- **GDPR**: Data minimization, purpose limitation, and PII checks.
-- **Visa CEDP**: Cardholder data security and ecosystem protection.
-- **AML / FATF**: Anti-Money Laundering checks (KYC, Source of Funds).
-- **PCI DSS**: Payment Card Industry security and storage rules.
-- **Basel II / III**: Financial risk data aggregation and reporting.
-- **General Transaction**: Baseline data quality and hygiene checks.
-
-### 2. 🤖 Independent AI Auditor
-- **Context-Aware Analysis**: The AI adapts its persona based on the selected standard (e.g., acts as a Privacy Officer for GDPR, Risk Manager for Basel).
-- **Strategic Recommendations**: prioritizes fixes (CRITICAL / HIGH / MEDIUM / LOW).
-- **Dynamic Chat**: Ask "Why did Rule X fail?" or "How do I fix the KYC gaps?" via the built-in Compliance Assistant.
-
-### 3. 📊 Deterministic Data Quality Scoring
-- **6-Dimension Scoring**: Completeness, Validity, Accuracy, Uniqueness, Consistency, Timeliness.
-- **30+ Hard Rules**: Specific checks for negative amounts, impossible dates, schema drift, null clusters, and more.
-- **Privacy-First**: Analysis is performed on **Metadata Only**. Raw PII never leaves your secure environment.
-
-### 4. 📝 Audit Reporting
-- **PDF Export**: Generate professional "Independent Auditor's Reports" with hash-signed provenance.
-- **Attestation**: Cryptographic fingerprinting of the analysis for audit trails.
+**FinAUDIT** is an enterprise-grade AI audit platform designed to validate financial datasets against rigorous global standards (GDPR, PCI DSS, Basel III) without exposing sensitive raw data. It combines **deterministic mathematical rules** with **probabilistic AI reasoning** to deliver "Independent Auditor's Reports" that are cryptographically signed.
 
 ---
 
-## 🛠️ Architecture
+## 🌟 Key Capabilities
 
-- **Backend**: FastAPI (Python), Pandas (Profiling), LangGraph (Agentic AI Workflow).
-- **Frontend**: React + Vite (Dashboard), Recharts (Visualization), Vanilla CSS (Premium UI).
-- **AI Model**: Google Gemini 1.5 Flash (via LangChain).
-- **Deployment**: Docker-ready, optimized for Render.com.
+### 1. Strict Privacy (Metadata-Only Analysis)
+
+- The system extracts _metadata_ (column names, types, null counts, min/max values) from your CSV.
+- **Raw rows never leave the ingestion layer.**
+- The AI agent _only_ sees this metadata summary, ensuring PII/PCI data is never passed to an external LLM.
+
+### 2. Hybrid Intelligence
+
+- **Rules Engine**: Hard-coded, pass/fail checks for absolute compliance (e.g., "Transaction amount must not be negative").
+- **AI Agent**: Cognitive reasoning to interpret _why_ a rule failed and act as a consultant (e.g., "The high null rate in 'Beneficiary' suggests incomplete KYC data collection").
+
+### 3. Cryptographic Provenance
+
+- Every report generated includes a SHA-256 hash "fingerprint" of the input metadata and the analysis results. This ensures the audit trail is immutable and tamper-evident.
 
 ---
 
-## ⚡ Quick Start
+## 🏗️ System Architecture & Implementation
+
+### 1. Data Ingestion & Profiling Layer (`backend/services/ingestion.py`)
+
+- **Implementation**: Uses `pandas` for high-performance data reading.
+- **Privacy Guard**: Immediately strips PII columns (names, emails) if configured, or converts them to boolean flags (e.g., `has_email_format`).
+- **Output**: A JSON object containing purely statistical data (e.g., "Column 'Amount': min=-50, max=1000, nulls=5%").
+
+### 2. Deterministic Rules Engine (`backend/core/rules_engine.py`)
+
+The heart of the system. It applies diverse rule sets based on the selected standard.
+
+- **Structure**: A class-based engine where each standard (GDPR, PCI-DSS) enables a specific subset of rules.
+- **Example Rule Logic**:
+  ```python
+  # Simplified Logic from backend/core/rules_engine.py
+  def check_integrity(self, metadata):
+      # Rule: Are negative values present in positive-only fields?
+      if metadata['min_value'] < 0 and column_type == 'transaction':
+          return {"passed": False, "score": 0, "details": "Found negative transactions."}
+  ```
+
+### 3. Data Quality Scoring (`backend/services/scoring.py`)
+
+- **Algorithm**: Weighted average of 7 dimensions:
+  - _Completeness, Validity, Accuracy, Consistency, Timeliness, Integrity, Security._
+- **Calculation**: `(Passed Weight / Total Weight) * 100`.
+- **Logic**: If a specific dimension has no applicable rules (e.g., "Timeliness" for a dataset without dates), it defaults to neutral (100) or N/A to avoid unfairly penalizing the score.
+
+### 4. AI Advisory Agent (`backend/ai/agent.py`)
+
+- **Framework**: Built using **LangChain** and **Google Gemini 1.5 Flash**.
+- **Workflow**:
+  1.  Receives the _Rules Engine Results_ + _Metadata_.
+  2.  Uses a "Persona Prompt" (e.g., "You are a Senior Financial Auditor...").
+  3.  Generates a structured `risk_assessment` and `remediation_plan`.
+- **Fallback**: Includes an async fallback wrapper to handle API timeouts gracefully.
+
+### 5. Report Generation (`frontend/src/utils/reportGenerator.js`)
+
+- **Client-Side Generation**: The PDF is built entirely in the browser using `jspdf` and `jspdf-autotable`.
+- **Design**: Mimics real-world "Independent Auditor's Reports" with sections for "Opinion", "Basis for Opinion", and "Management Responsibility".
+- **Security**: Wstamps the final PDF with the cryptographic fingerprint generated by the backend.
+
+---
+
+## ⚡ Technical Replication Guide
+
+If you want to build this system from scratch or extend it, here is the roadmap:
+
+### Phase 1: The Backend (FastAPI)
+
+1.  **Setup**: Initialize a generic FastAPI app (`main.py`).
+2.  **Define Models**: Create Pydantic models for `AnalysisRequest` and `ChatRequest`.
+3.  **Build the Engine**: Create `rules_engine.py`. implement basic checks (null checks, regex for emails).
+4.  **Integrate AI**: Use `langchain-google-genai` to connect to Gemini. Create a simple chain: `PromptTemplate -> LLM -> JSONOutputParser`.
+5.  **API Routes**: Create endpoints for `/analyze` (file upload) and `/chat` (WebSocket or Post).
+
+### Phase 2: The Frontend (React + Vite)
+
+1.  **Scaffolding**: `npm create vite@latest frontend -- --template react`.
+2.  **State Management**: Use `useState` to hold the "Analysis Result" (mega-object with scores, metadata, and AI text).
+3.  **Visualization**: Install `recharts`. Create a `RadarChart` component that takes the 7 dimension scores as props.
+4.  **PDF Engine**: Write a utility function that iterates through the `rule_results` JSON and draws a table using `jspdf-autotable`.
+
+---
+
+## 🛠️ Installation & Setup (Manual)
 
 ### Prerequisites
-- Python 3.10+
-- Node.js 16+
-- Google API Key (for AI features)
 
-### 1. Clone & Setup
+- **Python 3.10+**
+- **Node.js 16+**
+- **Google API Key** (for Gemini AI)
+
+### 1. Clone Repository
+
 ```bash
 git clone https://github.com/Anish-Ramesh/VISA-AI-PROBLEM-STATEMENT-3.git
 cd VISA-AI-PROBLEM-STATEMENT-3
 ```
 
-### 2. Run Locally (One-Shot)
-We provide a `build.sh` script to set up everything:
-```bash
-# Windows (Git Bash) or Linux/Mac
-./build.sh
-```
+### 2. Backend Setup
 
-### 3. Run Manually
-**Backend:**
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate
+
+# Activate Virtual Environment
+# Windows:
+.venv\Scripts\activate
+# Mac/Linux:
+source .venv/bin/activate
+
+# Install Dependencies
 pip install -r requirements.txt
-# Create .env file with GOOGLE_API_KEY=your_key
+
+# Configure Environment
+# Create a .env file in /backend
+echo "GOOGLE_API_KEY=your_key_here" > .env
+
+# Run Server
 uvicorn main:app --reload
 ```
 
-**Frontend:**
+_Server runs on `http://localhost:8000`_
+
+### 3. Frontend Setup
+
 ```bash
+# In a new terminal
 cd frontend
+
+# Install Dependencies
 npm install
+
+# Run Dev Server
 npm run dev
 ```
 
-Open **http://localhost:5173** (Frontend) or **http://localhost:8000** (Full Stack if built).
+_App runs on `http://localhost:5173`_
 
 ---
 
-## ☁️ Deployment (Render)
+## 🧪 Testing & Validation
 
-This project is configured for seamless deployment on **Render.com**.
+### How to Verify the implementation:
 
-1. **Connect Repository**: Link this repo to Render.
-2. **Settings**:
-   - **Build Command**: `./build.sh`
-   - **Start Command**: `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
-3. **Environment Variables**:
-   - `PYTHON_VERSION`: `3.11.0`
-   - `NODE_VERSION`: `18.17.0`
-   - `GOOGLE_API_KEY`: `...`
-4. **Deploy**: Render will auto-build the React frontend and serve it via FastAPI from `backend/static`.
+1.  **Data Ingestion Test**:
+
+    - Upload a CSV with known errors (e.g., negative values in a "Price" column).
+    - Verify that the "Accuracy" score drops in the dashboard.
+
+2.  **AI Context Test**:
+
+    - In the chat, ask: "Which column has the most missing values?"
+    - The AI should correctly identify the column from the metadata provided in the context.
+
+3.  **Provenance Test**:
+    - Generate a PDF.
+    - Note the "Cryptographic Fingerprint" hash at the bottom.
+    - Modify the source CSV and re-upload.
+    - The hash in the new report MUST be different.
 
 ---
 
-## 🔒 Security Summary
-- **No Data Retention**: Uploaded files are processed in-memory and discarded.
-- **Metadata Analyzed**: The AI only sees statistical summaries (column names, null counts), not raw rows.
-- **PII Guardrails**: Automatic redaction of sensitive columns before processing.
+## 📂 Directory Deep Dive
+
+```
+FinAUDIT/
+├── backend/
+│   ├── ai/
+│   │   └── agent.py              # LangChain setups, Prompts, and Gemini connection
+│   ├── core/
+│   │   └── rules_engine.py       # Hardcoded compliance logic (The "Math")
+│   ├── services/
+│   │   ├── ingestion.py          # Pandas: read_csv, profile_report
+│   │   ├── scoring.py            # Aggregates boolean rule results into 0-100 scores
+│   │   └── provenance.py         # Hashing logic for evidence trails
+│   └── main.py                   # FastAPI entry point, CORS, Static Files
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Upload.jsx        # Drag-and-drop zone
+│   │   │   └── ChatAssistant.jsx # Chat interface
+│   │   ├── utils/
+│   │   │   └── reportGenerator.js # JS-based PDF generation logic
+│   │   └── App.jsx               # Main state holder (orchestrator)
+```
+
+---
+
+## ❓ Troubleshooting
+
+| Issue                      | Potential Cause              | Fix                                                                                                                                        |
+| :------------------------- | :--------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
+| **"Upload 500 Error"**     | Backend crash during parsing | Check for CSV format issues (e.g., semicolons instead of commas). Ensure `pandas` is installed.                                            |
+| **"AI Response is Empty"** | Missing API Key              | Check `backend/.env`. Ensure `GOOGLE_API_KEY` is valid.                                                                                    |
+| **"Scores are all 100"**   | No Rules Triggered           | The dataset might be too clean, or column names don't match the "heuristic detection" (e.g., we look for columns named "email", "amount"). |
 
 ---
 
 ## 📜 License
+
 MIT License. Created by Anish Ramesh, 2024.
