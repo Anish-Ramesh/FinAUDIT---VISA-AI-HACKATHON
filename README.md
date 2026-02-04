@@ -1,358 +1,282 @@
-# FinAUDIT: The Ultimate Financial Compliance & Health System 🚀
+# 🛡️ FinAUDIT: The Autonomous Financial Compliance System
 
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Python](https://img.shields.io/badge/Backend-FastAPI-green)
-![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-blue)
-![AI](https://img.shields.io/badge/AI-Gemini%201.5%20Flash%20%2B%20LangGraph-orange)
-![Security](https://img.shields.io/badge/Security-Metadata%20Only-red)
-![Deployment](https://img.shields.io/badge/Deployment-Docker%20Ready-blueviolet)
-
-> **"Your Intelligent, Privacy-First Financial Auditor"**
-
-Welcome to **FinAUDIT**! This project is an enterprise-grade AI audit platform designed to validate financial datasets against rigorous global standards like **GDPR**, **PCI DSS**, and **Basel III**.
-
-What makes it special? It does all this **without ever exposing your sensitive raw data**. By combining rigid mathematical rules with the reasoning power of Google's Gemini AI, FinAUDIT delivers professional "Independent Auditor's Reports" that are cryptographically signed for absolute trust.
+> **Visa AI Hackathon Submission**
+> **Core Stack**: FastAPI • LangGraph • React • Google Gemini 3.0 • Recharts
 
 ---
 
-## 📑 Table of Contents
+## � Prologue: The Compliance Crisis
 
-1.  [🌟 Why FinAUDIT Exists](#-why-finaudit-exists)
-2.  [🚀 Key Features & Capabilities](#-key-features--capabilities)
-3.  [🏗️ System Architecture (How it Works)](#-system-architecture-how-it-works)
-4.  [📂 Project Directory Structure](#-project-directory-structure)
-5.  [⚡ Installation Guide (Beginner Friendly)](#-installation-guide-beginner-friendly)
-    - [Prerequisites](#prerequisites)
-    - [Option A: The Automatic Way](#option-a-the-automatic-way)
-    - [Option B: The Manual Way](#option-b-the-manual-way)
-6.  [🎮 User Manual: How to Use](#-user-manual-how-to-use)
-7.  [👨‍💻 Developer Guide: Extending the System](#-developer-guide-extending-the-system)
-8.  [🔗 API Documentation](#-api-documentation)
-9.  [📖 Glossary of Terms](#-glossary-of-terms)
-10. [❓ Troubleshooting & FAQ](#-troubleshooting--faq)
+In the modern financial world, compliance is a bottleneck. Data teams spend thousands of hours manually mapping columns (e.g., "Is 'Billing_Loc' an address?"), running strict arithmetic checks (Basel III), and cross-referencing global standards like GDPR and PCI DSS. A single human error can lead to millions in fines.
+
+**FinAUDIT was born to solve this.**
+
+It is not just a tool; it is an **Autonomous AI Auditor**. It combines the mathematical certainty of code (Deterministic) with the reasoning power of Large Language Models (Probabilistic). This document tells the story of how a raw file becomes a boardroom-ready audit report.
 
 ---
 
-## 🌟 Why FinAUDIT Exists
+## ⚡ Chapter 1: The Ingestion (The Security Gate)
 
-In the modern financial world, data is a liability. Storing credit card numbers (PCI DSS) or personal user data (GDPR) incorrectly can lead to massive fines.
+**"Data enters the system, but the risk stays out."**
 
-**The Problem:**
+The journey begins when a user uploads a CSV or Excel file via the secured React Frontend. In a traditional system, this file might be stored dangerously. In FinAUDIT, we use a **Zero-Copy PII Architecture**.
 
-- **Manual Audits are Slow**: Humans take weeks to check Excel sheets.
-- **AI is Risky**: You can't just upload customer data to ChatGPT/Gemini because of privacy laws.
-- **Rules are Rigid**: A simple "if/else" script can't tell you _why_ a transaction looks suspicious, only that it _is_.
+### 1.1 The Ingestion Security (Zero-Copy)
 
-**The FinAUDIT Solution:**
-We built a bridge. We extract **Statistical Metadata** (min, max, null counts) from your data locally. We send _only_ that safe metadata to the AI. The AI acts as a consultant, explaining compliance gaps without ever seeing a single real name or credit card number.
+Before any processing happens, the **Python Backend (FastAPI)** captures the file stream in-memory.
 
----
+- **Profiling**: We use `pandas` to extract _only_ statistical metadata.
+- **Data Discard**: The raw rows (containing Names, CC Numbers) are discarded immediately after profiling.
+- **Artifact Creation**: The system generates a `metadata` object that represents the _shape_ of the data, not the content.
 
-## 🚀 Key Features & Capabilities
-
-### 1. 🛡️ Absolute Privacy (Metadata-Only Analysis)
-
-- **Guardian Layer**: Before data leaves your browser/server, we strip all PII (Personally Identifiable Information).
-- **Statistical View**: The AI knows "User_Names column is 50% empty", but it doesn't know who the users are.
-
-### 2. 🧠 Hybrid Intelligence Engine
-
-- **Deterministic Rules**: 30+ hard-coded Python checks for binary pass/fail (e.g., "Is date format ISO8601?").
-- **Probabilistic AI**: An LLM (Large Language Model) that reasons about the _results_ of those rules (e.g., "A low date validity score combined with high transaction volume suggests a legacy system migration issue").
-
-### 3. 📊 Data Quality Scoring (DQS)
-
-We grade your data on a strict 0-100 scale across 7 dimensions:
-
-- **Completeness**: Are there meaningful gaps?
-- **Validity**: Does the data look like what it claims to be?
-- **Accuracy**: Are numerical values consistent?
-- **Consistency**: Do related fields match?
-- **Timeliness**: Is the data fresh?
-- **Integrity**: Are relationships preserved?
-- **Security**: Is sensitive data properly masked?
-
-### 4. 📝 Cryptographic Provenance
-
-- **Digital Fingerprinting**: We create a SHA-256 hash of your report.
-- **Tamper Proof**: If anyone edits the PDF report later, the hash won't match, proving it's fake.
-
----
-
-## 🏗️ System Architecture (How it Works)
-
-Understanding the flow of data is key to trusting the system.
-
-1.  **User Upload**: You drag & drop a CSV file into the React Frontend.
-2.  **Ingestion Layer (`backend/services/ingestion.py`)**:
-    - Pandas reads the file.
-    - PII Guardrail scans for sensitive columns headers (e.g., "SSN", "CVV").
-    - **Action**: Profiling generates a JSON summary (Metadata). Original file is discarded from memory.
-3.  **Rules Engine (`backend/core/rules_engine.py`)**:
-    - The Metadata is passed through 30+ Python functions.
-    - Result: A big list of `PASS` or `FAIL` booleans.
-4.  **Scoring Service (`backend/services/scoring.py`)**:
-    - Aggregates passes/fails into weighted scores (0-100).
-5.  **AI Analyst (`backend/ai/agent.py`)**:
-    - LangGraph constructs a prompt: _"Here is the profile of a financial dataset. It failed the Negative Transaction Rule. Explain why this is bad under Basel III standards."_
-    - Gemini 1.5 Flash returns a professional executive summary.
-6.  **Report Generation**:
-    - Frontend receives the Analysis JSON.
-    - `jspdf` builds a pixel-perfect PDF report.
-
----
-
-## 📂 Project Directory Structure
-
-```text
-FinAUDIT/
-├── Dockerfile               # 🐳 Docker Configuration
-├── README.md                # The master guide (You are here!)
-├── backend/                 # 🐍 Python FastAPI Server
-│   ├── main.py              # Entry point (App initialization)
-│   ├── .env                 # Secrets (API Keys) - Create this!
-│   ├── requirements.txt     # List of Python libraries
-│   ├── ai/                  # 🤖 AI Logic
-│   │   └── agent.py         # Talk to Gemini
-│   ├── core/                # 📏 Analysis Logic
-│   │   └── rules_engine.py  # The math rules (GDPR, PCI logic)
-│   ├── services/            # 🛠 Helper Services
-│   │   ├── ingestion.py     # Data reading
-│   │   └── scoring.py       # Score calculation
-│   └── api/                 # 🌐 Web Endpoints
-│       └── endpoints.py     # Route definitions
-│
-└── frontend/                # ⚛️ React Application
-    ├── package.json         # Node dependencies
-    ├── vite.config.js       # Build configuration
-    └── src/
-        ├── App.jsx          # Main application wrapper
-        ├── components/      # UI Building Blocks
-        │   ├── Upload.jsx   # Drag & Drop area
-        │   └── ChatAssistant.jsx # AI Chat window
-        └── utils/
-            └── reportGenerator.js # PDF creation logic
+```json
+// The only data that survives Ingestion
+{
+  "total_rows": 50000,
+  "columns": {
+    "transaction_amnt": {
+      "type": "float",
+      "null_percentage": 0.02,
+      "min": -50.0
+    },
+    "customer_ssn": { "type": "string", "unique_count": 49000 },
+    "residency_code": { "type": "string", "null_percentage": 15.4 }
+  }
+}
 ```
 
----
-
-## ⚡ Installation & Deployment Guide
-
-### Prerequisites
-
-1.  **Google API Key**: Needed for the AI. [Get a free key here](https://aistudio.google.com/app/apikey).
-2.  **Git**: To download the code.
-
-### Option A: Deploy on Railway (Recommended) ☁️
-
-1.  **Fork/Clone** this repository to your GitHub.
-2.  **Login to Railway**: Go to [Railway.app](https://railway.app/).
-3.  **New Project**: Select "Deploy from GitHub repo" and choose this project.
-4.  **Wait for Build**: Railway will automatically detect the `Dockerfile`.
-5.  **Configure Env**:
-    - Go to **Variables**.
-    - Add `GOOGLE_API_KEY` with your key.
-6.  **Done!** Your app is live at the provided URL.
-
-### Option B: Run Locally with Docker 🐳
-
-1.  **Clone the Repo**:
-    ```bash
-    git clone https://github.com/Anish-Ramesh/VISA-AI-PROBLEM-STATEMENT-3.git
-    cd VISA-AI-PROBLEM-STATEMENT-3
-    ```
-2.  **Set API Key**:
-    - Create a `.env` file in the root or backend folder.
-    - Add: `GOOGLE_API_KEY=your_key_here`
-3.  **Build & Run**:
-    ```bash
-    docker build -t finaudit .
-    docker run -p 8080:8080 -e GOOGLE_API_KEY=your_key_here finaudit
-    ```
-4.  **Access**: Open `http://localhost:8080`.
-
-### Option C: Run Locally (Manual) 🛠️
-
-#### Backend Setup
-
-1.  Navigate to `backend`: `cd backend`
-2.  Create Env: `python3 -m venv venv && source venv/bin/activate`
-3.  Install: `pip install -r requirements.txt`
-4.  Set Key: Export your key or create a `.env` file.
-5.  Run: `uvicorn main:app --reload --port 8080`
-
-#### Frontend Setup
-
-1.  Navigate to `frontend`: `cd frontend`
-2.  Install: `npm install`
-3.  Run: `npm run dev`
+_Technical Note_: This JSON is safe to send to any LLM because it contains no PII, yet it describes the data perfectly.
 
 ---
 
-## 🎮 User Manual: How to Use
+## 🧠 Chapter 2: The Rules Engine (The Logic Core)
 
-**1. The Dashboard**
-Open `http://localhost:5173`. You will see a modern, glass-morphism interface. The center is your "Audit Hub".
+**"Before the Agent thinks, the Code verifies."**
 
-**2. Analyzying Data**
+We cannot hallucinate compliance. A Credit Card number is either masked (PCI DSS pass) or it isn't (Fail). We built a custom `RulesEngine` in `core/rules_engine.py` that acts as the deterministic foundation.
 
-- Click the **"Upload Dataset"** box.
-- Select a CSV file. (Try one with financial columns like `Amount`, `Date`, `Account_ID`).
-- **Tip**: If you don't have one, create a simple CSV in Excel with columns "ID", "Amount", "Date" and put some dummy data.
+### 2.1 Smart Column Mapping (Regex Intelligence)
 
-**3. Interpreting Results**
-Once processed (approx 3 seconds), you will see:
+The system does not require users to tag columns. It uses **Advanced Regex Semantics** to "understand" the schema.
 
-- **Health Score**: A big number out of 100. Green is good (>80), Red is bad (<50).
-- **Radar Chart**: Shows where you are strong/weak (e.g., High Security but Low Completeness).
-- **Issues List**: Click on "Critical" to see exactly what failed.
+| Concept        | Patterns Detected (Partial List) |
+| :------------- | :------------------------------- | --------- | --------- | ------------ | ----------- | ------------ | ---------------- |
+| **Address**    | `r"address                       | domicile  | residency | municipality | territory   | provenance"` |
+| **KYC**        | `r"tin                           | ein       | ssn       | passport     | national_id | govt_id      | driver_license"` |
+| **Financials** | `r"principal                     | exposure  | remitter  | beneficiary  | ledger      | gl_code"`    |
+| **Security**   | `r"token                         | encyrpted | cipher    | hash         | salt        | key_id"`     |
 
-**4. Consultant Mode (Chat)**
+### 2.2 The Compliance Matrix
 
-- Look at the panel on the right.
-- The AI has already read your audit report.
-- Ask it: _"Why is my Validity score so low?"_ or _"Write a memo to the CTO explaining these risks."_
+Once columns are mapped, the engine executes 30+ strict binary checks across 5 standards:
 
-**5. Exporting**
+1.  **Visa CEDP**:
+    - _Check_: `visa_no_unauthorized_storage`
+    - _Logic_: IF column matches `pan|credit_card` AND format is `raw` (detected via sample stats) → **FAIL**.
+2.  **GDPR**:
+    - _Check_: `gdpr_storage_limitation`
+    - _Logic_: MUST have `retention|purge|ttl` columns present.
+3.  **Basel III**:
+    - _Check_: `basel_amount_accuracy`
+    - _Logic_: `min` value of `amount` columns must be >= 0 (No negative exposure).
+4.  **AML/FATF**:
+    - _Check_: `aml_suspicious_patterns`
+    - _Logic_: Data must contain both `amount` (Volume) and `timestamp` (Velocity) to support audit.
+    - _Check_: `aml_kyc_identifier` (Must be Present).
 
-- Click **"Export Audit Report"** at the top right.
-- A PDF will download. Scroll to the bottom to see the "Cryptographic Fingerprint".
+_Output_: A `scores` dictionary (0-100) for every dimension.
 
 ---
 
-## 👨‍💻 Developer Guide: Extending the System
+## 🤖 Chapter 3: The Agentic Brain (LangGraph)
 
-So you want to add a custom rule? Here is how to add a check for **"Forbidden Countries"**.
+**"The logic finds the errors. The AI explains the risk."**
 
-**Step 1: Open `backend/core/rules_engine.py`**
-Find the `RulesEngine` class. Add this method:
+This is the crown jewel. We use **LangGraph** to orchestrate a State Machine of AI Agents. It is a 4-step pipeline that mimics a human audit team.
+
+### 3.1 The Agent State
+
+Data flows through the graph in this schema:
 
 ```python
-def check_forbidden_countries(self, metadata):
-    # Check if 'Country' column has 'North Korea' or 'Iran'
-    # Remember: We scan distinct values from metadata, not raw rows!
-
-    forbidden = ['North Korea', 'Iran', 'Syria']
-
-    # We assume 'distinct_values' is part of our metadata profile for categorical columns
-    if 'Country' in metadata['columns']:
-        details = metadata['columns']['Country'].get('distinct_values', [])
-        found_forbidden = [c for c in details if c in forbidden]
-
-        if found_forbidden:
-             return {
-                 "passed": False,
-                 "weight": 10,
-                 "details": f"Found sanctioned countries: {found_forbidden}"
-             }
-
-    return {"passed": True, "weight": 10, "details": "No sanctioned jurisdictions found."}
+class AgentState(TypedDict):
+    metadata: dict           # The Safe JSON from Chapter 1
+    scores: dict             # The Rules Result from Chapter 2
+    dataset_type: str        # e.g., "High-Velocity Transaction Ledger"
+    insights: str            # "Health is low due to PCI failures"
+    privacy_check: str       # "Passed: No SSN in keys"
+    analysis: dict           # Final Report
 ```
 
-**Step 2: Register the Rule**
-In the same file, find the `run_compliance()` method. Add your new function to the list of checks.
+### 3.2 The Node Workflow (Deep Dive)
 
-**Step 3: Refresh**
-Restart your backend (`Ctrl+C` then `uvicorn...`). Upload your file. The new rule will now impact the "Security" score!
+The AI architecture is not a black box. It is a **Sequential State Machine** where each agent passes a structured "State Object" to the next.
 
----
+#### **Step 1: The Privacy Guardrail 🛡️**
 
-## 🔗 API Documentation
+- **Role**: The Gatekeeper.
+- **Input**: Raw `metadata` (Column names).
+- **Action**: It executes a pre-LLM scan using a restricted keyword list (`ssn`, `password`, `secret`).
+- **Logic**:
+  - _Safe_: "No PII keys found. Proceed to analysis."
+  - _Unsafe_: "ALERT: Column 'user_password' detected." -> **ABORT**.
+- **Why?**: To strictly prevent the LLM from even _seeing_ potentially compromised schema keys.
 
-Developers can integrate FinAUDIT into other apps.
+#### **Step 2: The Metadata Analyst 📊**
 
-### `POST /api/analyze`
+- **Role**: The Context Engine.
+- **Input**: `metadata` + `privacy_check_result`.
+- **Action**: It looks at the _combination_ of columns to determine the dataset's purpose.
+- **Decision Tree**:
+  - IF `amounts` + `dates` + `gl_code` ARE PRESENT → Classify as **"Financial Ledger"**.
+  - IF `passport` + `dob` + `address` ARE PRESENT → Classify as **"KYC Identity Data"**.
+- **Why?**: A "Missing Address" is critical for KYC data but irrelevant for a General Ledger. Context changes the rules.
 
-**Purpose**: Main entry point. Accepts a file, returns a full audit.
+#### **Step 3: The Insights Agent 📈**
 
-- **Input**: `Multipart/Form-Data` file (CSV).
-- **Output JSON**:
-  ```json
-  {
-    "filename": "transactions.csv",
-    "scores": {
-      "overall_score": 75.5,
-      "dimension_scores": {
-        "security": 100,
-        "validity": 45.0
-      }
-    },
-    "analysis": {
-      "executive_summary": "The dataset shows strong security protocols...",
-      "risk_assessment": "Critical failure in Date formats..."
-    },
-    "provenance": {
-      "fingerprint": "a1b2c3d4..."
-    }
-  }
-  ```
+- **Role**: The Quantitative Scientist.
+- **Input**: `scores` (from Rules Engine) + `dataset_type`.
+- **Action**: It translates raw numbers into narrative trends.
+- **Output Example**:
+  > "Health Score is 45/100. While GDPR compliance is perfect (100%), the dataset fails the 'Visa CEDP' check because 15% of rows in the 'Credit_Card' column appear unmasked."
+- **Why?**: The LLM needs a summarized "view" of the math, not just a raw dump of 50 score variables.
 
-### `POST /api/chat`
+#### **Step 4: The Advisory Agent (The CCO) 🧑‍⚖️**
 
-**Purpose**: Talk to the AI about the dataset.
-
-- **Input JSON**:
-  ```json
-  {
-    "question": "How do I fix the validity errors?",
-    "context": { ...full analysis object... }
-  }
-  ```
-- **Output JSON**:
-  ```json
-  {
-    "response": "To fix the validity errors, ensure all Date columns use ISO8601 format..."
-  }
-  ```
+- **Role**: Chief Compliance Officer.
+- **Model**: **Gemini 3 Flash Preview** (Chosen for 128k context window).
+- **Input**: `Insight Narrative` + `Detailed Rule Failures` + `Regulatory Text`.
+- **Action**: It generates the remediation strategy.
+- **Logic**:
+  1.  _Identify_: Which failure carries the highest legal penalty? (e.g., Unmasked PAN > Missing Date).
+  2.  _Prioritize_: Label fixes as **CRITICAL**, **HIGH**, or **MEDIUM**.
+  3.  _Prescribe_: Write specific SQL/Python remediation steps (e.g., "Run `UPDATE table SET pan = MASK(pan)`").
+- **Why?**: Compliance is about priority. You fix the jail-time risks first.
 
 ---
 
-## 📖 Glossary of Terms
+## � Chapter 4: The Conversation (Split-Stack AI)
 
-- **GDPR (General Data Protection Regulation)**: A strict EU law about user privacy. FinAUDIT helps check if you are collecting too much info.
-- **PCI DSS**: Rules for handling Credit Cards. You should never store full card numbers.
-- **Metadata**: "Data about data". If you have a spreadsheet, the _rows_ are data. The _fact_ that Column A is named "Age" and has an average of 34 is metadata.
-- **PII (Personally Identifiable Information)**: Names, SSNs, Emails. Stuff that identifies a human.
-- **LLM (Large Language Model)**: The AI technology behind Gemini/GPT.
-- **Provenance**: The history and origin of a document. We use crypto-hashing to prove the document hasn't changed.
-- **FastAPI**: The super-fast Python framework we use for the backend.
-- **Vite**: A modern tool for building React websites extremely quickly.
+**"An independent auditor, accessible 24/7."**
 
----
+Users can chat with their data. To optimize for latency and cost, we use a **Split-Stack Architecture**:
 
-## ❓ Troubleshooting & FAQ
-
-**Q: The AI chat isn't working/replying!**
-
-- **A**: This almost always means your **Google API Key** is missing or invalid. Check your `.env` file in the `backend` folder. Did you restart the server after adding it?
-
-**Q: I get "Upload Failed: 500 Internal Server Error".**
-
-- **A**: The backend likely crashed while trying to read your CSV.
-  1. Check your terminal output for the specific Python error.
-  2. Ensure your CSV is comma-separated, not semicolon-separated.
-  3. Ensure the file isn't empty.
-
-**Q: Why are all my scores 100?**
-
-- **A**: If your columns are named generically (e.g., `Col1`, `Col2`), our heuristic detector might not know what rules to apply. Renaming columns to `Email`, `Amount`, `Date` helps the system categorize them.
-
-**Q: Can I run this with Docker?**
-
-- **A**: Yes! The project includes a `Dockerfile` (or is Docker-ready). You can build a container to host it on AWS/GCP/Render easily.
+- **The Auditor (Backend)**: Uses **Gemini 3** for the heavy lifting (Generating the report).
+- **The Chatbot (Frontend Interaction)**: Uses **Gemini 2.5 Flash**.
+  - _Why?_ Gemini 2.5 is faster and cheaper. It takes the _Report_ generated by Gemini 3 as context and answers user questions.
+  - _Example User Query_: "Why did we fail the PCI check?"
+  - _Bot Response_: "We failed because column 'CC_Num' was detected with unmasked values, violating Visa CEDP Requirement 3."
 
 ---
 
-## 👥 Collaborators
+## �️ Chapter 5: The Interface (React & Visualization)
 
-| Name                | Role            | GitHub                                                 |
-| :------------------ | :-------------- | :----------------------------------------------------- |
-| **Anish Ramesh**    | Developer       | [@Anish-Ramesh](https://github.com/Anish-Ramesh)       |
-| **Ganesh Arihanth** | Developer       | [@GaneshArihanth](https://github.com/GaneshArihanth)   |
-| **Boopendranath**   | Lead Researcher | [@swankystark](https://github.com/swankystark)         |
-| **Eashwar Kumar**   | Lead Tester     | [@Eashwar-Kumar-T](https://github.com/Eashwar-Kumar-T) |
+**"Compliance at a glance."**
+
+The Dashboard acts as the mission control.
+
+- **Tech**: React 18 + Vite (for blink-speed HMR) + Recharts.
+- **Visualization**:
+  - **Health Dial**: An animated gauge showing the global trust score.
+  - **Radar Charts**: Comparing performance across dimensions (AML vs GDPR vs Visa).
+  - **Remediation List**: A sorted list of actionable fixes, prioritized by the AI (Critical first).
+- **UX Detail**: We purposely solved the "Recharts Resizing" bug using absolute positioning tech, ensuring the dashboard looks perfect on 4K monitors and laptops alike.
 
 ---
 
-**License:** MIT Open Source
-**Version:** 2.0 (Agentic Release)
+## 🔐 Chapter 6: The Trust Layer (The "Digital Wax Seal")
+
+**"How do we know the AI didn't lie?"**
+
+FinAUDIT uses a **Cryptographic Ledger** to prove that every report is authentic. Think of it like a **Digital Wax Seal** on an envelope.
+
+### 6.1 The Logic (Simple Explanation)
+
+Imagine you are sending a secret letter:
+
+1.  **The Fingerprint**: We take the entire audit report and put it through a mathematical shredder (SHA-256) that turns it into a unique string of characters called a "Hash".
+    - _Analogy_: If you change even one comma in the report, the Hash changes completely.
+2.  **The Signature**: We stamp this Hash with our **Private Key** (which only the system possesses).
+3.  **The Verification**: Anyone with our **Public Key** can unlock the stamp and check the Hash. If it matches, they _know_ the report hasn't been touched since we created it.
+
+### 6.2 The Tech (Under the Hood)
+
+Every API response includes a `provenance` block:
+
+```json
+"provenance": {
+    "timestamp": "2024-02-02T12:00:00Z",
+    "fingerprint": "a1b2c3d4...",           // The SHA-256 Hash
+    "signature": "base64_rsa_signature...",  // The RSA-2048 Signed Hash
+    "algorithm": "RSA-SHA256"
+}
+```
+
+**Why is this better than Blockchain?**
+It provides the same **Immutability** (you can't fake it) but instantly, without waiting for miners or paying gas fees. It is the perfect "Lite" solution for high-speed audits.
+
+### Architecture Diagram
+
+```mermaid
+graph TD
+    A[User Upload] -->|Stream| B(FastAPI Backend)
+    B -->|Pandas| C{Profiling}
+    C -->|Metadata Only| D[Rules Engine]
+    D -->|Scores| E[LangGraph Agent]
+    E -->|Node 1| F[Privacy Guard]
+    F -->|Node 2| G[Metadata Analyst]
+    G -->|Node 3| H[Insights Agent]
+    H -->|Node 4| I[Gemini 3 Advisory]
+    I -->|JSON Report| J[React Dashboard]
+```
+
+### Installation
+
+**1. Clone the Repo**
+
+```bash
+git clone https://github.com/GaneshArihanth/FinAUDIT.git
+cd FinAUDIT
+```
+
+**2. Backend Setup**
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**3. Frontend Setup**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**4. Configuration (.env)**
+You must provide keys for the Split-Stack AI:
+
+```ini
+# For the heavy analysis (Agent)
+GOOGLE_API_KEY=AIzaSy_Gemini3_Key...
+# For the fast chat (Chatbot)
+GOOGLE_CHAT_API_KEY=AIzaSy_Gemini2.5_Key...
+```
+
+---
+
+## 🔮 The Future: Why FinAUDIT Matters
+
+Traditional compliance is **Reactive**—you fix issues after the audit fails.
+FinAUDIT is **Proactive**—it tells you the risk the moment the data is born.
+
+By strictly separating the "How" (Code/Regex) from the "Why" (AI/Gemini), we have built a system that is:
+
+1.  **Hallucination-Proof**: The AI cannot invent a passing score.
+2.  **Privacy-Preserving**: Designed for Banking standards.
+3.  **Explainable**: Every decision traces back to a specific Rule ID.
+
+**FinAUDIT: Trust your data.**
