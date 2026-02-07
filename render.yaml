@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: finaudit-app
+    runtime: docker
+    region: oregon
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: GOOGLE_API_KEY
+        sync: false

@@ -14,20 +14,20 @@ import traceback
 # Force load .env, overriding system variables to ensure local file is used
 load_dotenv(override=True)
 
-def get_local_key():
+def get_local_key(key_name="GOOGLE_API_KEY"):
     """
     Manually reads .env to ensure we get the file's exact content,
     bypassing potentially stale system environment variables.
     """
     try:
         env_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
-        print(f"   📂 [Env Config]: Looking for .env at: {env_path}")
+        # print(f"   📂 [Env Config]: Looking for .env at: {env_path}")
         
         if not os.path.exists(env_path):
              print(f"   ❌ [Env Config]: File NOT found at {env_path}")
-             return os.environ.get("GOOGLE_API_KEY", "")
+             return os.environ.get(key_name, "")
         
-        print(f"   ✅ [Env Config]: File found. Scanning content lines...")
+        # print(f"   ✅ [Env Config]: File found. Scanning content lines for {key_name}...")
         
         # utf-8-sig handles BOM if present (common in Windows editing)
         with open(env_path, "r", encoding="utf-8-sig") as f:
@@ -36,25 +36,23 @@ def get_local_key():
                 if not clean or clean.startswith("#"): 
                     continue
                 
-                # Check for key name pattern
-                if "GOOGLE_API_KEY" in clean:
-                    print(f"      [Line {i+1} Match]: {clean[:20]}...")
+                # Check for key name pattern (Strict start match to avoid substring issues)
+                if clean.startswith(f"{key_name}="):
+                    # print(f"      [Line {i+1} Match]: {clean[:20]}...")
                     # Naive parse: split by =
                     if "=" in clean:
                         key_part = clean.split("=", 1)[1].strip()
                         # Remove quotes
                         key = key_part.strip('"').strip("'")
-                        print(f"   📄 [Env Config]: Extracted Key: '{key}'")
+                        # print(f"   📄 [Env Config]: Extracted Key: '{key}'")
                         return key
-                else:
-                    print(f"      [Line {i+1} Skip]: {clean[:15]}...")
-
+                
     except Exception as e:
         print(f"   ⚠️ [Key Config]: Could not read local .env: {e}")
     
     # Fallback to standard env var if file read fails
-    fallback_key = os.environ.get("GOOGLE_API_KEY", "")
-    print(f"   🗺️ [Env Config]: Falling back to os.environ: ...{fallback_key[-5:] if len(fallback_key)>5 else fallback_key}")
+    fallback_key = os.environ.get(key_name, "")
+    # print(f"   🗺️ [Env Config]: Falling back to os.environ: ...{fallback_key[-5:] if len(fallback_key)>5 else fallback_key}")
     return fallback_key
 
 # Define the Agent State
@@ -67,17 +65,34 @@ class AgentState(TypedDict):
     analysis: dict
     compliance_standard: str
 
-# Initialize LLM with Explicit Key from File
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+# --- 1. Agent LLM (Audit Analysis) ---
+# Key: GOOGLE_API_KEY
+# Model: gemini-3-flash (Using verified ID: gemini-3-flash-preview)
+llm_agent = ChatGoogleGenerativeAI(
+    model="gemini-3-flash-preview", 
     temperature=0.2,
-    google_api_key=get_local_key()
+    google_api_key=get_local_key("GOOGLE_API_KEY")
 )
 
-# Initialize Embeddings with Explicit Key from File
+# --- 2. Chatbot LLM (Interactive Chat) ---
+# Key: GOOGLE_CHAT_API_KEY
+# Model: gemini-2.5-flash (Using verified ID: gemini-2.5-flash)
+# Fallback: Use Main Key if Chat Key is missing to prevent crash
+chat_key = get_local_key("GOOGLE_CHAT_API_KEY")
+if not chat_key:
+    print("   ⚠️ [Config]: GOOGLE_CHAT_API_KEY not found. Falling back to GOOGLE_API_KEY for Chatbot.")
+    chat_key = get_local_key("GOOGLE_API_KEY")
+
+llm_chat = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    temperature=0.4, 
+    google_api_key=chat_key
+)
+
+# Initialize Embeddings with Explicit Key from File (Using Primary Key)
 embeddings = GoogleGenerativeAIEmbeddings(
     model="models/embedding-001",
-    google_api_key=get_local_key()
+    google_api_key=get_local_key("GOOGLE_API_KEY")
 )
 
 # --- Fallback Logic ---
@@ -140,14 +155,19 @@ def fallback_gemini_rapidapi(messages: List[BaseMessage]) -> str:
         print(f"   ❌ [Fallback]: RapidAPI also failed: {e}")
         raise e
 
-def invoke_llm_with_fallback(messages: List[BaseMessage]):
+def invoke_llm_with_fallback(messages: List[BaseMessage], is_chat=False):
     """Synchronous wrapper"""
+    target_llm = llm_chat if is_chat else llm_agent
     try:
-        api_key = get_local_key()
-        print(f"   🔑 [LLM DEBUG]: Using GOOGLE_API_KEY (FULL): '{api_key}'")
-        print(f"   📨 [LLM Request Payload]: {messages}")
+        # print(f"   📨 [LLM Request Payload]: {messages}")
+        response = target_llm.invoke(messages)
         
-        response = llm.invoke(messages)
+        # Patch for Gemini 3 Preview returning list content
+        if isinstance(response.content, list):
+            # Extract text from the first part if available
+            text_parts = [part.get("text", "") for part in response.content if "text" in part]
+            response.content = "".join(text_parts)
+            
         return response
     except Exception as e:
         print("   ❌ [LLM Error Traceback]:")
@@ -159,14 +179,19 @@ def invoke_llm_with_fallback(messages: List[BaseMessage]):
             return AIMessage(content=content)
         raise e
 
-async def invoke_llm_with_fallback_async(messages: List[BaseMessage]):
+async def invoke_llm_with_fallback_async(messages: List[BaseMessage], is_chat=False):
     """Async wrapper"""
+    target_llm = llm_chat if is_chat else llm_agent
     try:
-        api_key = get_local_key()
-        print(f"   🔑 [LLM ASYNC DEBUG]: Using GOOGLE_API_KEY (FULL): '{api_key}'")
-        print(f"   📨 [LLM ASYNC Request Payload]: {messages}")
-
-        response = await llm.ainvoke(messages)
+        # print(f"   📨 [LLM ASYNC Request Payload]: {messages}")
+        response = await target_llm.ainvoke(messages)
+        
+        # Patch for Gemini 3 Preview returning list content
+        if isinstance(response.content, list):
+            # Extract text from the first part if available
+            text_parts = [part.get("text", "") for part in response.content if "text" in part]
+            response.content = "".join(text_parts)
+            
         return response
     except Exception as e:
         print("   ❌ [LLM Async Error Traceback]:")
@@ -292,8 +317,8 @@ def advisory_agent(state: AgentState):
     ]
     
     try:
-        # Use Fallback Wrapper
-        response = invoke_llm_with_fallback(messages)
+        # Use Fallback Wrapper (FALSE = Use llm_agent)
+        response = invoke_llm_with_fallback(messages, is_chat=False)
         content = response.content.replace("```json", "").replace("```", "").strip()
         analysis_json = json.loads(content)
         print("   ✅ [Advisory Agent]: Plan generated successfully.")
@@ -418,8 +443,8 @@ async def chat_about_dataset(question: str, context: dict) -> str:
     ]
     
     try:
-        # Use Fallback Async Wrapper
-        response = await invoke_llm_with_fallback_async(messages)
+        # Use Fallback Async Wrapper (TRUE = Use llm_chat)
+        response = await invoke_llm_with_fallback_async(messages, is_chat=True)
         return response.content
     except Exception as e:
         return f"Auditor Error: {str(e)}"

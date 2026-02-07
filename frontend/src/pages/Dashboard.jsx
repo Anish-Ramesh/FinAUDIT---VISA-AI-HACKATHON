@@ -289,30 +289,34 @@ const Dashboard = ({ data, onReset }) => {
                 </div>
 
                 {/* Dimension Bar Chart (Full Width) */}
-                <div className="card" style={{ marginBottom: '2rem', height: '300px', padding: '1.5rem' }}>
+                <div className="card" style={{ marginBottom: '2rem', height: '300px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
                     <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', color: '#334155', fontWeight: 600 }}>Dimension Performance Breakdown</h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={dimData} layout="vertical" margin={{ left: 80, right: 30, bottom: 20 }}>
-                            <XAxis type="number" domain={[0, 100]} hide />
-                            <YAxis
-                                dataKey="name"
-                                type="category"
-                                width={100}
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 13, fontWeight: 600, fill: '#475569', dx: -10 }}
-                            />
-                            <Tooltip
-                                cursor={{ fill: '#f8fafc', opacity: 0.5 }}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                            />
-                            <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={24} animationDuration={1000}>
-                                {dimData.map((e, i) => (
-                                    <Cell key={i} fill={e.score > 80 ? COLORS.success : e.score > 50 ? COLORS.warning : COLORS.danger} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <div style={{ flex: 1, position: 'relative', width: '100%', minHeight: 0 }}>
+                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={dimData} layout="vertical" margin={{ left: 80, right: 30, bottom: 20 }}>
+                                <XAxis type="number" domain={[0, 100]} hide />
+                                <YAxis
+                                    dataKey="name"
+                                    type="category"
+                                    width={100}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 13, fontWeight: 600, fill: '#475569', dx: -10 }}
+                                />
+                                <Tooltip
+                                    cursor={{ fill: '#f8fafc', opacity: 0.5 }}
+                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                />
+                                <Bar dataKey="score" radius={[0, 6, 6, 0]} barSize={24} animationDuration={1000}>
+                                    {dimData.map((e, i) => (
+                                        <Cell key={i} fill={e.score > 80 ? COLORS.success : e.score > 50 ? COLORS.warning : COLORS.danger} />
+                                    ))}
+                                </Bar>
+                            </BarChart>
+                        </ResponsiveContainer>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Collapsible Details */}
