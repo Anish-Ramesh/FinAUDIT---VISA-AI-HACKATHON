@@ -68,11 +68,13 @@ class AgentState(TypedDict):
 # --- 1. Agent LLM (Audit Analysis) ---
 # Key: GOOGLE_API_KEY
 # Model: gemini-3.1-pro-preview (Using verified ID: gemini-3.1-pro-preview)
+print(f"   🔧 [Config]: Initializing llm_agent with model='gemini-3.1-pro-preview'")
 llm_agent = ChatGoogleGenerativeAI(
     model="gemini-3.1-pro-preview", 
     temperature=0.2,
     google_api_key=get_local_key("GOOGLE_API_KEY")
 )
+print(f"   ✅ [Config]: llm_agent initialized successfully.")
 
 # --- 2. Chatbot LLM (Interactive Chat) ---
 # Key: GOOGLE_CHAT_API_KEY
@@ -83,11 +85,13 @@ if not chat_key:
     print("   ⚠️ [Config]: GOOGLE_CHAT_API_KEY not found. Falling back to GOOGLE_API_KEY for Chatbot.")
     chat_key = get_local_key("GOOGLE_API_KEY")
 
+print(f"   🔧 [Config]: Initializing llm_chat with model='gemini-3-flash-preview'")
 llm_chat = ChatGoogleGenerativeAI(
     model="gemini-3-flash-preview",
     temperature=0.4, 
     google_api_key=chat_key
 )
+print(f"   ✅ [Config]: llm_chat initialized successfully.")
 
 # Initialize Embeddings with Explicit Key from File (Using Primary Key)
 embeddings = GoogleGenerativeAIEmbeddings(
@@ -158,23 +162,24 @@ def fallback_gemini_rapidapi(messages: List[BaseMessage]) -> str:
 def invoke_llm_with_fallback(messages: List[BaseMessage], is_chat=False):
     """Synchronous wrapper"""
     target_llm = llm_chat if is_chat else llm_agent
+    model_name = 'gemini-3-flash-preview' if is_chat else 'gemini-3.1-pro-preview'
+    print(f"   📨 [LLM]: Invoking model='{model_name}' (is_chat={is_chat})")
     try:
-        # print(f"   📨 [LLM Request Payload]: {messages}")
         response = target_llm.invoke(messages)
+        print(f"   ✅ [LLM]: Model '{model_name}' responded successfully.")
         
         # Patch for Gemini 3 Preview returning list content
         if isinstance(response.content, list):
-            # Extract text from the first part if available
             text_parts = [part.get("text", "") for part in response.content if "text" in part]
             response.content = "".join(text_parts)
             
         return response
     except Exception as e:
-        print("   ❌ [LLM Error Traceback]:")
+        print(f"   ❌ [LLM Error]: Model '{model_name}' FAILED with: {type(e).__name__}: {e}")
         traceback.print_exc()
         
         err_str = str(e).lower()
-        if any(x in err_str for x in ["400", "429", "500", "resourceexhausted", "quota", "getaddrinfo"]):
+        if any(x in err_str for x in ["400", "429", "500", "resourceexhausted", "quota", "getaddrinfo", "404", "not found", "invalid"]):
             content = fallback_gemini_rapidapi(messages)
             return AIMessage(content=content)
         raise e
@@ -182,23 +187,24 @@ def invoke_llm_with_fallback(messages: List[BaseMessage], is_chat=False):
 async def invoke_llm_with_fallback_async(messages: List[BaseMessage], is_chat=False):
     """Async wrapper"""
     target_llm = llm_chat if is_chat else llm_agent
+    model_name = 'gemini-3-flash-preview' if is_chat else 'gemini-3.1-pro-preview'
+    print(f"   📨 [LLM Async]: Invoking model='{model_name}' (is_chat={is_chat})")
     try:
-        # print(f"   📨 [LLM ASYNC Request Payload]: {messages}")
         response = await target_llm.ainvoke(messages)
+        print(f"   ✅ [LLM Async]: Model '{model_name}' responded successfully.")
         
         # Patch for Gemini 3 Preview returning list content
         if isinstance(response.content, list):
-            # Extract text from the first part if available
             text_parts = [part.get("text", "") for part in response.content if "text" in part]
             response.content = "".join(text_parts)
             
         return response
     except Exception as e:
-        print("   ❌ [LLM Async Error Traceback]:")
+        print(f"   ❌ [LLM Async Error]: Model '{model_name}' FAILED with: {type(e).__name__}: {e}")
         traceback.print_exc()
         
         err_str = str(e).lower()
-        if any(x in err_str for x in ["400", "429", "500", "resourceexhausted", "quota", "getaddrinfo"]):
+        if any(x in err_str for x in ["400", "429", "500", "resourceexhausted", "quota", "getaddrinfo", "404", "not found", "invalid"]):
             loop = asyncio.get_running_loop()
             content = await loop.run_in_executor(None, fallback_gemini_rapidapi, messages)
             return AIMessage(content=content)
