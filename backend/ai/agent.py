@@ -67,16 +67,16 @@ class AgentState(TypedDict):
 
 # --- 1. Agent LLM (Audit Analysis) ---
 # Key: GOOGLE_API_KEY
-# Model: gemini-3-flash (Using verified ID: gemini-3-flash-preview)
+# Model: gemini-3.1-pro-preview (Using verified ID: gemini-3.1-pro-preview)
 llm_agent = ChatGoogleGenerativeAI(
-    model="gemini-3-flash-preview", 
+    model="gemini-3.1-pro-preview", 
     temperature=0.2,
     google_api_key=get_local_key("GOOGLE_API_KEY")
 )
 
 # --- 2. Chatbot LLM (Interactive Chat) ---
 # Key: GOOGLE_CHAT_API_KEY
-# Model: gemini-2.5-flash (Using verified ID: gemini-2.5-flash)
+# Model: gemini-3-flash-preview (Using verified ID: gemini-3-flash-preview)
 # Fallback: Use Main Key if Chat Key is missing to prevent crash
 chat_key = get_local_key("GOOGLE_CHAT_API_KEY")
 if not chat_key:
@@ -84,7 +84,7 @@ if not chat_key:
     chat_key = get_local_key("GOOGLE_API_KEY")
 
 llm_chat = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
+    model="gemini-3-flash-preview",
     temperature=0.4, 
     google_api_key=chat_key
 )

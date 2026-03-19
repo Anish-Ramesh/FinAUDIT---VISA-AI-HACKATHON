@@ -9,7 +9,7 @@ print(f"Testing with key starting with: {key[:5]}...")
 
 try:
     llm = ChatGoogleGenerativeAI(
-        model="gemini-3-flash-preview", 
+        model="gemini-3.1-pro-preview", 
         google_api_key=key
     )
     print(" invoking model...")
