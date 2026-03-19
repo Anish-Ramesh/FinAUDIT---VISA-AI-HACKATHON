@@ -255,14 +255,12 @@ const Dashboard = ({ data, onReset }) => {
                             <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>/ 100 Score</div>
                         </div>
                         <div style={{ width: '80px', height: '80px' }}>
-                            <ResponsiveContainer>
-                                <PieChart>
-                                    <Pie data={healthData} cx="50%" cy="50%" innerRadius={25} outerRadius={35} paddingAngle={0} dataKey="value" startAngle={90} endAngle={450}>
-                                        <Cell fill={scores.health_score > 70 ? COLORS.success : COLORS.warning} />
-                                        <Cell fill="#f1f5f9" />
-                                    </Pie>
-                                </PieChart>
-                            </ResponsiveContainer>
+                            <PieChart width={80} height={80}>
+                                <Pie data={healthData} cx="50%" cy="50%" innerRadius={25} outerRadius={35} paddingAngle={0} dataKey="value" startAngle={90} endAngle={450}>
+                                    <Cell fill={scores.health_score > 70 ? COLORS.success : COLORS.warning} />
+                                    <Cell fill="#f1f5f9" />
+                                </Pie>
+                            </PieChart>
                         </div>
                     </div>
 
@@ -289,11 +287,10 @@ const Dashboard = ({ data, onReset }) => {
                 </div>
 
                 {/* Dimension Bar Chart (Full Width) */}
-                <div className="card" style={{ marginBottom: '2rem', height: '300px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+                <div className="card" style={{ marginBottom: '2rem', padding: '1.5rem' }}>
                     <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', color: '#334155', fontWeight: 600 }}>Dimension Performance Breakdown</h3>
-                    <div style={{ flex: 1, position: 'relative', width: '100%', minHeight: 0 }}>
-                        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div style={{ position: 'relative', width: '100%', height: '220px' }}>
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <BarChart data={dimData} layout="vertical" margin={{ left: 80, right: 30, bottom: 20 }}>
                                 <XAxis type="number" domain={[0, 100]} hide />
                                 <YAxis
@@ -315,7 +312,6 @@ const Dashboard = ({ data, onReset }) => {
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
-                        </div>
                     </div>
                 </div>
 
