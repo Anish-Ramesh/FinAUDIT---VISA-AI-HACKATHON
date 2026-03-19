@@ -68,9 +68,9 @@ class AgentState(TypedDict):
 # --- 1. Agent LLM (Audit Analysis) ---
 # Key: GOOGLE_API_KEY
 # Model: gemini-3.1-pro-preview (Using verified ID: gemini-3.1-pro-preview)
-print(f"   🔧 [Config]: Initializing llm_agent with model='gemini-3.1-pro-preview'")
+print(f"   🔧 [Config]: Initializing llm_agent with model='gemini-3-flash-preview'")
 llm_agent = ChatGoogleGenerativeAI(
-    model="gemini-3.1-pro-preview", 
+    model="gemini-3-flash-preview", 
     temperature=0.2,
     google_api_key=get_local_key("GOOGLE_API_KEY")
 )
@@ -162,7 +162,7 @@ def fallback_gemini_rapidapi(messages: List[BaseMessage]) -> str:
 def invoke_llm_with_fallback(messages: List[BaseMessage], is_chat=False):
     """Synchronous wrapper"""
     target_llm = llm_chat if is_chat else llm_agent
-    model_name = 'gemini-3-flash-preview' if is_chat else 'gemini-3.1-pro-preview'
+    model_name = 'gemini-3-flash-preview'
     print(f"   📨 [LLM]: Invoking model='{model_name}' (is_chat={is_chat})")
     try:
         response = target_llm.invoke(messages)
@@ -187,7 +187,7 @@ def invoke_llm_with_fallback(messages: List[BaseMessage], is_chat=False):
 async def invoke_llm_with_fallback_async(messages: List[BaseMessage], is_chat=False):
     """Async wrapper"""
     target_llm = llm_chat if is_chat else llm_agent
-    model_name = 'gemini-3-flash-preview' if is_chat else 'gemini-3.1-pro-preview'
+    model_name = 'gemini-3-flash-preview'
     print(f"   📨 [LLM Async]: Invoking model='{model_name}' (is_chat={is_chat})")
     try:
         response = await target_llm.ainvoke(messages)

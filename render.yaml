@@ -9,3 +9,5 @@ services:
         value: 8080
       - key: GOOGLE_API_KEY
         sync: false
+      - key: GOOGLE_CHAT_API_KEY
+        sync: false

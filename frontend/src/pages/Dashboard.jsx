@@ -287,10 +287,10 @@ const Dashboard = ({ data, onReset }) => {
                 </div>
 
                 {/* Dimension Bar Chart (Full Width) */}
-                <div className="card" style={{ marginBottom: '2rem', height: '300px', padding: '1.5rem', display: 'flex', flexDirection: 'column' }}>
+                <div className="card" style={{ marginBottom: '2rem', padding: '1.5rem' }}>
                     <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1rem', color: '#334155', fontWeight: 600 }}>Dimension Performance Breakdown</h3>
-                    <div style={{ flex: 1, width: '100%', minHeight: 200 }}>
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div style={{ position: 'relative', width: '100%', height: '220px' }}>
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <BarChart data={dimData} layout="vertical" margin={{ left: 80, right: 30, bottom: 20 }}>
                                 <XAxis type="number" domain={[0, 100]} hide />
                                 <YAxis
